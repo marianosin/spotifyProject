@@ -1,36 +1,19 @@
-from dotenv import dotenv_values
-import base64
-import requests
+from src import spotify
 
 
-# Load the .env file
-CLIENT_ID = dotenv_values(".env").get('SPOTIFY_API_CLIENT')
-CLIENT_SECRET = dotenv_values(".env").get("SPOTIFY_API_SECRET")
+# Get playlist from Spotify
+playlists = spotify.search_playlist('Los 40 Principales: Exitos 2024 | Lista 40', spotify.get_spotify_token())
+
+#select the desired playlist
+for playlist in playlists['playlists']['items']:
+    if "Los 40 Principales: Exitos 2024 | Lista 40" ==playlist['name']:
+        top_list = playlist.copy()
+        break
+
+playlist_id = top_list['tracks']['href'].split('/')[-2]
+
+# Get tracks from playlist
+tracks = spotify.get_playlist_tracks(playlist_id, spotify.get_spotify_token())
 
 
-# get Spotify API token
-
-def get_spotify_token():
-    # Encoding client id and secret
-    auth_string = f"{CLIENT_ID}:{CLIENT_SECRET}"
-    auth_bytes = auth_string.encode('utf-8')
-    auth_base64 = str(base64.b64encode(auth_bytes), 'utf-8')
-
-    # Spotify API endpoint
-    url = "https://accounts.spotify.com/api/token"
-    headers = {
-        "Authorization": "Basic " + auth_base64.decode('utf-8'),
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    data = {
-        "grant_type": "client_credentials"
-    }
-
-    # Make a POST request to the Spotify API
-    response = requests.post(url, headers=headers, data=data)
-
-    # Get the access token from the response
-    access_token = response.json()["access_token"]
-
-    return access_token
-
+print('ok')
